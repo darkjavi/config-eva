@@ -1,3 +1,5 @@
+// **** esto lo escirbo yo ****
+
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
