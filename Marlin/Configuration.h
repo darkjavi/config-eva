@@ -1,7 +1,7 @@
-// **** esto lo escirbo yo ****
-
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
+// y yo lo borro y añado esto
+
 
 // This configuration file contains the basic settings.
 // Advanced settings can be found in Configuration_adv.h
