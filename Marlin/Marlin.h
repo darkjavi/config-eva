@@ -57,7 +57,6 @@
 #define SERIAL_PROTOCOLLN(x) (MYSERIAL.print(x),MYSERIAL.write('\n'))
 #define SERIAL_PROTOCOLLNPGM(x) (serialprintPGM(PSTR(x)),MYSERIAL.write('\n'))
 
-
 const char errormagic[] PROGMEM ="Error:";
 const char echomagic[] PROGMEM ="echo:";
 #define SERIAL_ERROR_START (serialprintPGM(errormagic))
@@ -109,13 +108,8 @@ void manage_inactivity();
 #endif
 
 #if defined(Y_ENABLE_PIN) && Y_ENABLE_PIN > -1
-  #ifdef Y_DUAL_STEPPER_DRIVERS
-    #define  enable_y() { WRITE(Y_ENABLE_PIN, Y_ENABLE_ON); WRITE(Y2_ENABLE_PIN,  Y_ENABLE_ON); }
-    #define disable_y() { WRITE(Y_ENABLE_PIN,!Y_ENABLE_ON); WRITE(Y2_ENABLE_PIN, !Y_ENABLE_ON); }
-  #else
-    #define  enable_y() WRITE(Y_ENABLE_PIN, Y_ENABLE_ON)
-    #define disable_y() WRITE(Y_ENABLE_PIN,!Y_ENABLE_ON)
-  #endif
+  #define  enable_y() WRITE(Y_ENABLE_PIN, Y_ENABLE_ON)
+  #define disable_y() WRITE(Y_ENABLE_PIN,!Y_ENABLE_ON)
 #else
   #define enable_y() ;
   #define disable_y() ;
@@ -167,9 +161,24 @@ void ClearToSend();
 
 void get_coordinates();
 #ifdef DELTA
+float probe_bed(float x, float y);
+void set_delta_constants();
+void home_delta_axis();
+void calibration_report();
+void bed_probe_all();
+void set_default_z_probe_offset();
+void set_delta_constants();
+void save_carriage_positions(int position_num);
 void calculate_delta(float cartesian[3]);
+void adjust_delta(float cartesian[3]);
 extern float delta[3];
+extern float delta_tmp[3];
+extern float delta_tower1_x,delta_tower1_y;
+extern float delta_tower2_x,delta_tower2_y;
+extern float delta_tower3_x,delta_tower3_y;
+
 #endif
+void prepare_move_raw();
 void prepare_move();
 void kill();
 void Stop();
@@ -197,7 +206,13 @@ extern int extrudemultiply; // Sets extrude multiply factor (in percent)
 extern float current_position[NUM_AXIS] ;
 extern float add_homeing[3];
 #ifdef DELTA
-extern float endstop_adj[3];
+  extern float z_probe_offset[3];
+  extern float endstop_adj[3];
+  extern float tower_adj[6];
+  extern float delta_radius;
+  extern float delta_diagonal_rod;
+  //*extern float Z_MAX_POS;
+  //*extern float Z_MAX_LENGTH;
 #endif
 extern float min_pos[3];
 extern float max_pos[3];
@@ -225,9 +240,3 @@ extern unsigned long stoptime;
 extern uint8_t active_extruder;
 
 #endif
-
-
-
-
-
-

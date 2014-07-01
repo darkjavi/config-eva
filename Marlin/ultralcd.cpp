@@ -88,14 +88,8 @@ static void menu_action_setting_edit_callback_long5(const char* pstr, unsigned l
 
 #if !defined(LCD_I2C_VIKI)
   #define ENCODER_STEPS_PER_MENU_ITEM 5
-  #ifndef ENCODER_PULSES_PER_STEP
-    #define ENCODER_PULSES_PER_STEP 1
-  #endif
 #else
   #define ENCODER_STEPS_PER_MENU_ITEM 2 // VIKI LCD rotary encoder uses a different number of steps per rotation
-  #ifndef ENCODER_PULSES_PER_STEP
-    #define ENCODER_PULSES_PER_STEP 1
-  #endif
 #endif
 
 
@@ -322,68 +316,6 @@ static void lcd_cooldown()
     lcd_return_to_status();
 }
 
-#ifdef BABYSTEPPING
-static void lcd_babystep_x()
-{
-    if (encoderPosition != 0)
-    {
-        babystepsTodo[X_AXIS]+=(int)encoderPosition;
-        encoderPosition=0;
-        lcdDrawUpdate = 1;
-    }
-    if (lcdDrawUpdate)
-    {
-        lcd_implementation_drawedit(PSTR("Babystepping X"),"");
-    }
-    if (LCD_CLICKED)
-    {
-        lcd_quick_feedback();
-        currentMenu = lcd_tune_menu;
-        encoderPosition = 0;
-    }
-}
-
-static void lcd_babystep_y()
-{
-    if (encoderPosition != 0)
-    {
-        babystepsTodo[Y_AXIS]+=(int)encoderPosition;
-        encoderPosition=0;
-        lcdDrawUpdate = 1;
-    }
-    if (lcdDrawUpdate)
-    {
-        lcd_implementation_drawedit(PSTR("Babystepping Y"),"");
-    }
-    if (LCD_CLICKED)
-    {
-        lcd_quick_feedback();
-        currentMenu = lcd_tune_menu;
-        encoderPosition = 0;
-    }
-}
-
-static void lcd_babystep_z()
-{
-    if (encoderPosition != 0)
-    {
-        babystepsTodo[Z_AXIS]+=BABYSTEP_Z_MULTIPLICATOR*(int)encoderPosition;
-        encoderPosition=0;
-        lcdDrawUpdate = 1;
-    }
-    if (lcdDrawUpdate)
-    {
-        lcd_implementation_drawedit(PSTR("Babystepping Z"),"");
-    }
-    if (LCD_CLICKED)
-    {
-        lcd_quick_feedback();
-        currentMenu = lcd_tune_menu;
-        encoderPosition = 0;
-    }
-}
-#endif //BABYSTEPPING
-
 static void lcd_tune_menu()
 {
     START_MENU();
@@ -401,14 +333,6 @@ static void lcd_tune_menu()
 #endif
     MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
     MENU_ITEM_EDIT(int3, MSG_FLOW, &extrudemultiply, 10, 999);
-    
-#ifdef BABYSTEPPING
-    #ifdef BABYSTEP_XY
-      MENU_ITEM(submenu, "Babystep X", lcd_babystep_x);
-      MENU_ITEM(submenu, "Babystep Y", lcd_babystep_y);
-    #endif //BABYSTEP_XY
-    MENU_ITEM(submenu, "Babystep Z", lcd_babystep_z);
-#endif
 #ifdef FILAMENTCHANGEENABLE
      MENU_ITEM(gcode, MSG_FILAMENTCHANGE, PSTR("M600"));
 #endif
@@ -420,9 +344,7 @@ static void lcd_prepare_menu()
     START_MENU();
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
 #ifdef SDSUPPORT
-    #ifdef MENU_ADDAUTOSTART
-      MENU_ITEM(function, MSG_AUTOSTART, lcd_autostart_sd);
-    #endif
+    //MENU_ITEM(function, MSG_AUTOSTART, lcd_autostart_sd);
 #endif
     MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
     MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
@@ -794,11 +716,7 @@ void lcd_sdcard_menu()
     {
         if (_menuItemNr == _lineNr)
         {
-            #ifndef SDCARD_RATHERRECENTFIRST
-              card.getfilename(i);
-            #else
-              card.getfilename(fileCnt-1-i);
-            #endif
+            card.getfilename(i);
             if (card.filenameIsDir)
             {
                 MENU_ITEM(sddirectory, MSG_CARD_MENU, card.filename, card.longFilename);
@@ -1066,10 +984,10 @@ void lcd_update()
         		reprapworld_keypad_move_home();
         	}
 		#endif
-        if (abs(encoderDiff) >= ENCODER_PULSES_PER_STEP)
+        if (encoderDiff)
         {
             lcdDrawUpdate = 1;
-            encoderPosition += encoderDiff / ENCODER_PULSES_PER_STEP;
+            encoderPosition += encoderDiff;
             encoderDiff = 0;
             timeoutToStatus = millis() + LCD_TIMEOUT_TO_STATUS;
         }
@@ -1379,6 +1297,19 @@ char *itostr4(const int &xx)
   return conv;
 }
 
+// convert float to string with +123 format
+char *ftostr30(const float &x)
+{
+int xx=x;
+conv[0]=(xx>=0)?'+':'-';
+xx=abs(xx);
+conv[1]=(xx/100)%10+'0';
+conv[2]=(xx/10)%10+'0';
+conv[3]=(xx)%10+'0';
+conv[4]=0;
+return conv;
+}
+
 //  convert float to string with 12345 format
 char *ftostr5(const float &x)
 {
@@ -1457,9 +1388,3 @@ void copy_and_scalePID_d()
 }
 
 #endif //ULTRA_LCD
-
-
-
-
-
-

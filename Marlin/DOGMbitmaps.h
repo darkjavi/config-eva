@@ -119,9 +119,3 @@ const unsigned char status_screen1_bmp[] PROGMEM = { //AVR-GCC, WinAVR
 };
 
 
-
-
-
-
-
-

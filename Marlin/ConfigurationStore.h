@@ -5,7 +5,7 @@
 
 void Config_ResetDefault();
 
-#ifndef DISABLE_M503
+#ifdef EEPROM_CHITCHAT
 void Config_PrintSettings();
 #else
 FORCE_INLINE void Config_PrintSettings() {}
@@ -20,9 +20,3 @@ FORCE_INLINE void Config_RetrieveSettings() { Config_ResetDefault(); Config_Prin
 #endif
 
 #endif//CONFIG_STORE_H
-
-
-
-
-
-

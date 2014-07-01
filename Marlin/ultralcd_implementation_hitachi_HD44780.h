@@ -128,10 +128,17 @@ extern volatile uint16_t buttons;  //an extended version of the last checked but
 // These values are independent of which pins are used for EN_A and EN_B indications
 // The rotary encoder part is also independent to the chipset used for the LCD
 #if defined(EN_A) && defined(EN_B)
+  #ifndef ULTIMAKERCONTROLLER
     #define encrot0 0
     #define encrot1 2
     #define encrot2 3
     #define encrot3 1
+  #else
+    #define encrot0 0
+    #define encrot1 1
+    #define encrot2 3
+    #define encrot3 2
+  #endif
 #endif 
 
 #endif //ULTIPANEL
@@ -451,9 +458,9 @@ static void lcd_implementation_status_screen()
 #  else
     lcd.setCursor(0,1);
     lcd.print('X');
-    lcd.print(ftostr3(current_position[X_AXIS]));
+    lcd.print(ftostr30(current_position[X_AXIS]));
     lcd_printPGM(PSTR(" Y"));
-    lcd.print(ftostr3(current_position[Y_AXIS]));
+    lcd.print(ftostr30(current_position[Y_AXIS]));
 #  endif//EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
 # endif//LCD_WIDTH > 19
     lcd.setCursor(LCD_WIDTH - 8, 1);
@@ -737,31 +744,14 @@ static void lcd_implementation_update_indicators()
 #endif
 
 #ifdef LCD_HAS_SLOW_BUTTONS
-extern uint32_t blocking_enc;
-
 static uint8_t lcd_implementation_read_slow_buttons()
 {
   #ifdef LCD_I2C_TYPE_MCP23017
-  uint8_t slow_buttons;
     // Reading these buttons this is likely to be too slow to call inside interrupt context
     // so they are called during normal lcd_update
-    slow_buttons = lcd.readButtons() << B_I2C_BTN_OFFSET; 
-    #if defined(LCD_I2C_VIKI)
-    if(slow_buttons & (B_MI|B_RI)) { //LCD clicked
-       if(blocking_enc > millis()) {
-         slow_buttons &= ~(B_MI|B_RI); // Disable LCD clicked buttons if screen is updated
-       }
-    }
-    #endif
-    return slow_buttons; 
+    return lcd.readButtons() << B_I2C_BTN_OFFSET; 
   #endif
 }
 #endif
 
 #endif//ULTRA_LCD_IMPLEMENTATION_HITACHI_HD44780_H
-
-
-
-
-
-
